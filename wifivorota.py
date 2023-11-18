@@ -1,11 +1,13 @@
 from flask import Flask, request, Response
 from flask_sock import Sock
+from flask_cors import CORS
 import time
 import urllib.parse
 import threading
 
 app = Flask(__name__)
 sockets = Sock(app)
+CORS(app)
 
 class Camera:
     def __init__(self, socket):
