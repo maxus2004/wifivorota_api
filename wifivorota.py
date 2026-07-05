@@ -9,6 +9,10 @@ app = Flask(__name__)
 sockets = Sock(app)
 CORS(app)
 
+import logging
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
+
 class Camera:
     def __init__(self, socket):
         self.clients = 0
@@ -44,8 +48,10 @@ def api():
     global cameras
     login = request.args['login']
     cameras[login].socketLock.acquire()
+    print('sending to camera: ?'+request.query_string.decode())
     cameras[login].socket.send('?'+request.query_string.decode())
     result = cameras[login].socket.receive()
+    print("received from camera: "+result)
     cameras[login].socketLock.release()
     return result
 
@@ -57,9 +63,9 @@ def gather_img(login,password):
         print("cameraClients = "+str(cameras[login].clients))
 
         cameras[login].socketLock.acquire()
+        print('sending to camera: ?cmd=wan_stream&login='+urllib.parse.quote(login)+'&password='+urllib.parse.quote(password))
         cameras[login].socket.send('?cmd=wan_stream&login='+urllib.parse.quote(login)+'&password='+urllib.parse.quote(password))
-        print('?cmd=wan_stream&login='+urllib.parse.quote(login)+'&password='+urllib.parse.quote(password))
-        print(cameras[login].socket.receive())
+        print("received from camera: "+cameras[login].socket.receive())
         cameras[login].socketLock.release()
         
         while True:
